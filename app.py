@@ -4,7 +4,9 @@ from flask import (
     redirect,
     url_for,
     request,
-    render_template)
+    render_template,
+    current_app
+)
 from flask.ext.sqlalchemy import SQLAlchemy
 import requests
 import os
@@ -17,6 +19,7 @@ SQLALCHEMY_DATABASE_URI = os.environ.get(
     'sqlite:////tmp/test.db'
 )
 DEBUG = True
+REDIRECT_URL = os.environ.get('REDIRECT_URL', 'http://localhost:5000/login')
 CLEF_APP_ID = '4f318ac177a9391c2e0d221203725ffd'
 CLEF_APP_SECRET = '2125d80f4583c52c46f8084bcc030c9b'
 SECRET_KEY = 'development key'
@@ -46,9 +49,6 @@ def logged_in(view):
         logged_in_at = session.get('logged_in_at', None)
         user = User.query.get(user_id)
 
-        print session
-        print user
-
         # does check for database logout of user
         if user and user.logged_out_at > logged_in_at:
             session.clear()
@@ -61,7 +61,11 @@ def logged_in(view):
 @app.route('/')
 @logged_in
 def hello(user=None):
-    return render_template('index.html', user=user)
+    return render_template(
+        'index.html',
+        user=user,
+        redirect_url=current_app.config['REDIRECT_URL']
+    )
 
 
 @app.route('/login')

@@ -1,3 +1,4 @@
 Flask==0.9
 Flask-SQLAlchemy==0.16
 requests==0.13.5
+psycopg2==2.4.4
