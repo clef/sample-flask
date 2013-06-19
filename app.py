@@ -45,7 +45,7 @@ def logged_in(view):
     """
     @functools.wraps(view)
     def decorated_view(*args, **kwargs):
-        user_id = session.get('user', '')
+        user_id = session.get('user', -1)
         logged_in_at = session.get('logged_in_at', None)
         user = User.query.get(user_id)
 
