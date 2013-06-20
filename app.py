@@ -110,7 +110,7 @@ class LogoutHookException(Exception):
     pass
 
 
-@app.route('/logout', methods=['POST'])
+@app.route('/logout', methods=['POST', 'GET'])
 @logged_in
 def logout(user=None):
     if request.form.get("logout_token", None) is not None:

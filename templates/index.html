@@ -13,7 +13,7 @@
         Clef ID: {{ user.clef_id }}
       </pre>
       <p>
-      <a href="/logout">logout</a>
+      <a id='logout' href="#">logout</a>
       </p>
     {% else %}
       <h2>Sign in with Clef</h2>
@@ -24,5 +24,11 @@
         data-redirect-url='{{redirect_url}}'>
       </script>
     {% endif %}
+      <script>
+        logout.onclick = function() {
+          logout.innerHTML = 'trying logging out on your phone!'
+          return false;
+        }
+      </script>
   </body>
 </html>
