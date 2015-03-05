@@ -27,6 +27,12 @@ SECRET_KEY = 'development key'
 app = Flask(__name__)
 app.config.from_object(__name__)
 db = SQLAlchemy(app)
+
+# NOTE: For the sample app, we drop all information every time the app reloads.
+#
+# Obviously, this doesn't really work in production. Remove the following
+# lines to have a sane DB configuration.
+db.drop_all()
 db.create_all()
 
 class User(db.Model):
