@@ -39,7 +39,6 @@ db = SQLAlchemy(app)
 #
 # Obviously, this doesn't really work in production. Remove the following
 # lines to have a sane DB configuration.
-db.drop_all()
 db.create_all()
 
 class User(db.Model):
