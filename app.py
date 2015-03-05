@@ -33,8 +33,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String())
     first_name = db.Column(db.String())
-    clef_id = db.Column(db.Integer, unique=True)
-    logged_out_at = db.Column(db.Integer)
+    clef_id = db.Column(db.String())
+    logged_out_at = db.Column(db.BigInteger)
 
 
 def logged_in(view):
