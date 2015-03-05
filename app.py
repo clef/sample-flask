@@ -18,7 +18,7 @@ SQLALCHEMY_DATABASE_URI = os.environ.get(
     'HEROKU_POSTGRESQL_WHITE_URL',
     'sqlite:////tmp/test.db'
 )
-DEBUG = True
+DEBUG = not os.environ.get('PRODUCTION')
 REDIRECT_URL = os.environ.get('REDIRECT_URL', 'http://localhost:5000/login')
 CLEF_APP_ID = '4f318ac177a9391c2e0d221203725ffd'
 CLEF_APP_SECRET = '2125d80f4583c52c46f8084bcc030c9b'
