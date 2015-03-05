@@ -13,6 +13,8 @@ import os
 import json
 import functools
 import time
+import logging
+from logging import StreamHandler
 
 SQLALCHEMY_DATABASE_URI = os.environ.get(
     'HEROKU_POSTGRESQL_WHITE_URL',
@@ -26,6 +28,11 @@ SECRET_KEY = 'development key'
 
 app = Flask(__name__)
 app.config.from_object(__name__)
+
+# set up logging
+app.logger.setLevel(logging.DEBUG)
+app.logger.addHandler(StreamHandler())
+
 db = SQLAlchemy(app)
 
 # NOTE: For the sample app, we drop all information every time the app reloads.
