@@ -39,12 +39,6 @@ CsrfProtect(app)
 
 db = SQLAlchemy(app)
 
-# NOTE: For the sample app, we drop all information every time the app reloads.
-#
-# Obviously, this doesn't really work in production. Remove the following
-# lines to have a sane DB configuration.
-db.create_all()
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String())
@@ -169,4 +163,9 @@ def logout(user=None):
 
 
 if __name__ == "__main__":
+    # NOTE: For the sample app, we drop all information every time the app reloads.
+    #
+    # Obviously, this doesn't really work in production. Remove the following
+    # lines to have a sane DB configuration.
+    db.create_all()
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
