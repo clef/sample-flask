@@ -8,9 +8,9 @@ from flask import (
     current_app
 )
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask_wtf.csrf import CsrfProtect, validate_csrf
 import requests
 import os
+import base64
 import json
 import functools
 import time
@@ -33,9 +33,6 @@ app.config.from_object(__name__)
 # set up logging
 app.logger.setLevel(logging.DEBUG)
 app.logger.addHandler(StreamHandler())
-
-# set up CSRF protection
-CsrfProtect(app)
 
 db = SQLAlchemy(app)
 
@@ -67,6 +64,17 @@ def logged_in(view):
         return view(user=user, *args, **kwargs)
     return decorated_view
 
+def is_valid_state(state):
+    state_is_valid = ('state' in session
+        and len(session['state']) > 0
+        and session['state'] == state)
+    session.pop('state', None)
+    return state_is_valid
+
+def generate_state():
+    state = base64.urlsafe_b64encode(os.urandom(32))
+    session['state'] = state
+    return state
 
 @app.route('/')
 @logged_in
@@ -74,6 +82,7 @@ def hello(user=None):
     return render_template(
         'index.html',
         user=user,
+        state=generate_state(),
         redirect_url=current_app.config['REDIRECT_URL']
     )
 
@@ -87,7 +96,7 @@ def login():
     # For more protection about the state parameter and CSRF, check out
     # http://docs.getclef.com/v1.0/docs/verifying-state-parameter
     state = request.args.get('state')
-    if not validate_csrf(state):
+    if not is_valid_state(state):
         return "Oops, the state parameter didn't match what was passed in to the Clef button."
 
     code = request.args.get('code')
