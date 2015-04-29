@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script>
+  </head>
+  <body>
+    <h2>Welcome, {{ user.first_name }}!</h2>
+    <p>Here is your information:</p>
+    <pre>
+      ID: {{ user.id }}
+      First name: {{ user.first_name }}
+      Email: {{ user.email }}
+      Clef ID: {{ user.clef_id }}
+    </pre>
+    <p>
+    <a id='logout' href="#">logout</a>
+    </p>
+    <script>
+      logout.onclick = function() {
+        logout.innerHTML = 'trying logging out on your phone!'
+        return false;
+      }
+    </script>
+  </body>
+</html>

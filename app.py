@@ -76,15 +76,21 @@ def generate_state():
     session['state'] = state
     return state
 
+
 @app.route('/')
 @logged_in
 def hello(user=None):
-    return render_template(
-        'index.html',
-        user=user,
-        state=generate_state(),
-        redirect_url=current_app.config['REDIRECT_URL']
-    )
+    if user:
+        return render_template(
+            'logged-in.html',
+            user=user
+        )
+    else:
+        return render_template(
+            'login.html',
+            state=generate_state(),
+            redirect_url=current_app.config['REDIRECT_URL']
+        )
 
 
 @app.route('/login')
@@ -132,7 +138,7 @@ def login():
     session['user'] = user.id
     session['logged_in_at'] = time.time()
 
-    return redirect(url_for('hello'))
+    return render_template('callback.html', user=user)
 
 
 class LogoutHookException(Exception):
