@@ -1,3 +1,11 @@
+import os
+import base64
+import json
+import functools
+import time
+import logging
+from logging import StreamHandler
+
 from flask import (
     Flask,
     session,
@@ -9,13 +17,9 @@ from flask import (
 )
 from flask.ext.sqlalchemy import SQLAlchemy
 import requests
-import os
-import base64
-import json
-import functools
-import time
-import logging
-from logging import StreamHandler
+import clef
+
+
 
 SQLALCHEMY_DATABASE_URI = os.environ.get(
     'HEROKU_POSTGRESQL_WHITE_URL',
@@ -35,6 +39,7 @@ app.logger.setLevel(logging.DEBUG)
 app.logger.addHandler(StreamHandler())
 
 db = SQLAlchemy(app)
+clef.initialize(app_id=CLEF_APP_ID, app_secret=CLEF_APP_SECRET)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,6 +47,9 @@ class User(db.Model):
     first_name = db.Column(db.String())
     clef_id = db.Column(db.String())
     logged_out_at = db.Column(db.BigInteger)
+
+class LogoutHookException(Exception):
+    pass
 
 
 def logged_in(view):
@@ -86,7 +94,6 @@ def hello(user=None):
         redirect_url=current_app.config['REDIRECT_URL']
     )
 
-
 @app.route('/login')
 def login():
     # If the state parameter doesn't match what we passed into the Clef button,
@@ -100,76 +107,54 @@ def login():
         return "Oops, the state parameter didn't match what was passed in to the Clef button."
 
     code = request.args.get('code')
-    data = {
-        'app_id': app.config['CLEF_APP_ID'],
-        'app_secret': app.config['CLEF_APP_SECRET'],
-        'code': code
-    }
-    response = requests.post('https://clef.io/api/v1/authorize', data=data)
-    json_response = json.loads(response.text)
+    # call to get user information handles the OAuth handshake
+    try:
+        user_information = clef.get_login_information(code=code)
 
-    if json_response.get('error'):
-        return json_response['error']
+    except clef.APIError as e:
+        app.logger.error(e)
 
-    token = json_response['access_token']
-    response = requests.get('https://clef.io/api/v1/info?access_token=%s' % token)
-    json_response = json.loads(response.text)
+    # request was successful so store the user in the session
+    else:
+        clef_id = user_information.get('id')
+        email = user_information.get('email')
+        first_name = user_information.get('first_name')
 
-    if json_response.get('error'):
-        return json_response['error']
+        user = User.query.filter_by(clef_id=clef_id).first()
+        if not user:
+            user = User(email=email, first_name=first_name, clef_id=clef_id)
+            db.session.add(user)
+            db.session.commit()
 
-    user_info = json_response['info']
-    user = User.query.filter_by(clef_id=user_info['id']).first()
-    if not user:
-        user = User(
-            email=user_info['email'],
-            first_name=user_info['first_name'],
-            clef_id=user_info['id']
-        )
-        db.session.add(user)
-        db.session.commit()
-
-    session['user'] = user.id
-    session['logged_in_at'] = time.time()
-
+        session['user'] = user.id
+        session['logged_in_at'] = time.time()
     return redirect(url_for('hello'))
 
-
-class LogoutHookException(Exception):
-    pass
-
-
-@app.route('/logout', methods=['POST', 'GET'])
+@app.route('/logout', methods=['POST'])
 @logged_in
 def logout(user=None):
-    if request.form.get("logout_token", None) is not None:
-        data = dict(
-            logout_token=request.form.get("logout_token"),
-            app_id=CLEF_APP_ID,
-            app_secret=CLEF_APP_SECRET
-        )
 
-        response = requests.post("https://clef.io/api/v1/logout", data=data)
+    # Clef is notifying you that a user has logged out from their phone
+    logout_token = request.form.get('logout_token')
 
-        if response.status_code == 200:
-            json_response = json.loads(response.text)
+    # use the clef_id to look up the user in your database
+    # http://docs.getclef.com/v1.0/docs/database-logout
+    try:
+        clef_id = clef.get_logout_information(logout_token=logout_token)
 
-            if json_response.get('success', False):
-                clef_id = json_response.get('clef_id', None)
+    except clef.APIError as e:
+        app.logger.error(e)
+        return 'Logout error'
 
-                user = User.query.filter_by(clef_id=clef_id).first()
-
-                user.logged_out_at = time.time()
-
-                db.session.add(user)
-                db.session.commit()
-
-                return "ok"
-
-    elif user:
-        session.clear()
-        return redirect(url_for('hello'))
-
+    else:
+        user = User.query.filter_by(clef_id=clef_id).first()
+        if not user:
+            app.logger.error('Invalid user')
+        else:
+            user.logged_out_at = time.time()
+            db.session.add(user)
+            db.session.commit()
+        return 'Ok'
 
 if __name__ == "__main__":
     # NOTE: For the sample app, we drop all information every time the app reloads.
