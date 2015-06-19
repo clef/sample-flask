@@ -39,7 +39,7 @@ app.logger.setLevel(logging.DEBUG)
 app.logger.addHandler(StreamHandler())
 
 db = SQLAlchemy(app)
-clef.initialize(CLEF_APP_ID, CLEF_APP_SECRET)
+clef.initialize(app_id=CLEF_APP_ID, app_secret=CLEF_APP_SECRET)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
