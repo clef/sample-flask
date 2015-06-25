@@ -149,7 +149,7 @@ Have a question or just want to chat? Send an email to [support@getclef.com](mai
 We're always around, but we do an official Q&A every Friday from 10am to noon PST :) — would love to see you there! 
 
 ## About 
-Clef is an Oakland-based company building a better way to log in online. We power logs on more than 80,000 websites and are building a beautiful experience and inclusive culture. Read more about our [values](https://getclef.com/values), and if you like what you see, come [work with us](https://getclef.com/jobs)!
+Clef is an Oakland-based company building a better way to log in online. We power logins on more than 80,000 websites and are building a beautiful experience and inclusive culture. Read more about our [values](https://getclef.com/values), and if you like what you see, come [work with us](https://getclef.com/jobs)!
 
 
 
