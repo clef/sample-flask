@@ -1,6 +1,5 @@
 # Clef + Python
 ![license:mit](https://img.shields.io/badge/license-mit-blue.svg)
-![build:passing](https://img.shields.io/travis/joyent/node/v0.6.svg)
 ![language:Python](https://img.shields.io/pypi/pyversions/Django.svg)         
 
 ## Getting started
